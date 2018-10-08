@@ -1,78 +1,174 @@
 <?php
+/**
+ * Valores para envio dos emails
+ */
+$debug = true; //se verdade imprime os dados, se falso envia e redireciona
+$empresa = 'Nome da Empresa';
+$meu_email = 'jose@propulsao.digital';
+$tamanho_maximo_arquivo = '100000';
+$assunto_contato = 'Contato enviado pelo site';
+$assunto_resposta = 'Contato - ' . $empresa;
+$data = date("d/m/Y - H:i");
 
-//      Formulário
-// =================================================== //
+/**
+ * Verifica os campos rebidos do formulário
+ */
+if (isset($_POST['nome']) && !empty($_POST['nome'])) {
+  $nome = $_POST['nome'];
+} else {
+  $nome = '';
+}
+if (isset($_POST['email']) && !empty($_POST['email'])) {
+  $email = $_POST['email'];
+} else {
+  $email = '';
+}
+if (isset($_POST['telefone']) && !empty($_POST['telefone'])) {
+  $telefone = $_POST['telefone'];
+} else {
+  $telefone = '';
+}
+if (isset($_POST['cpf']) && !empty($_POST['cpf'])) {
+  $cpf = $_POST['cpf'];
+} else {
+  $cpf = '';
+}
+if (isset($_POST['rg']) && !empty($_POST['rg'])) {
+  $rg = $_POST['rg'];
+} else {
+  $rg = '';
+}
+if (isset($_POST['cep']) && !empty($_POST['cep'])) {
+  $cep = $_POST['cep'];
+} else {
+  $cep = '';
+}
+if (isset($_POST['cnpj']) && !empty($_POST['cnpj'])) {
+  $cnpj = $_POST['cnpj'];
+} else {
+  $cnpj = '';
+}
+if (isset($_POST['assunto']) && !empty($_POST['assunto'])) {
+  $assunto = $_POST['assunto'];
+} else {
+  $assunto = '';
+}
+if (isset($_POST['mensagem']) && !empty($_POST['mensagem'])) {
+  $mensagem = $_POST['mensagem'];
+} else {
+  $mensagem = '';
+}
 
-// campos
+/**
+ * Campos do arquivo enviado
+ */
+if (isset($_FILES['arquivo']['name']) && !empty($_FILES['arquivo']['name'])) {
+  $nome_arquivo = $_FILES['arquivo']['name'];
+} else {
+  $nome_arquivo = '';
+}
+if (isset($_FILES['arquivo']['type']) && !empty($_FILES['arquivo']['type'])) {
+  $tipo_arquivo = $_FILES['arquivo']['type'];
+} else {
+  $tipo_arquivo = '';
+}
+if (isset($_FILES['arquivo']['tmp_name']) && !empty($_FILES['arquivo']['tmp_name'])) {
+  $arquivo = $_FILES['arquivo']['tmp_name'];
+} else {
+  $arquivo = '';
+}
+if (isset($_FILES['arquivo']['error']) && !empty($_FILES['arquivo']['error'])) {
+  $erro_arquivo = $_FILES['arquivo']['error'];
+} else {
+  $erro_arquivo = '';
+}
+if (isset($_FILES['arquivo']['size']) && !empty($_FILES['arquivo']['size'])) {
+  $tamanho_arquivo = $_FILES['arquivo']['size'];
+} else {
+  $tamanho_arquivo = '';
+}
 
-$data                   = date("d/m/Y - H:i");
-$nome                   = $_POST['nome'];
-$email                  = $_POST['email'];
-$telefone               = $_POST['telefone'];
-//$ass 					= $_POST['assunto'];
-$info                   = $_POST['mensagem'];
-
-$nome_arquivo = $_FILES['arquivo']['name'];
-$temp_name = $_FILES['arquivo']['tmp_name'];
-
-
-//      Email que chega até você
-// =================================================== //
-$para = "comercial@alumi9.com.br";
-$assunto_contato = "Contato enviado pelo site: $ass";
-$header          = "
+/**
+ * Dados e-mail que chega para você
+ */
+$para = $meu_email;
+$assunto_contato = "Contato enviado pelo site: $assunto";
+$header = "
 <b>Nome:</b>    $nome ($empresa),<br>
 <b>Email:</b>   $email<br>
-<b>Assunto:</b>   $ass<br>
+<b>Assunto:</b> $assunto<br>
 <br><br>
 <b>Mensagem:</b><br>
-$info
+$mensagem
 <br><br>
-
-==============================================<br>
-        $data <br>
-==============================================<br>
-";
-
-// Função HTML :)
-$headers .= "MIME-Version: 1.0\r\n";
-// $headers .= "Content-type: text/html;charset=iso-8859-1\r\n";
+Data: $data";
+$headers = "MIME-Version: 1.0\r\n";
 $headers .= "Content-type: text/html;charset=utf-8\r\n";
 $headers .= "From: $nome <$email>\r\n";
 
-//      Resposta que vai ao Cliente/Visitante
-// =================================================== //
-
-// $resp_assunto   = "Formulário :: Minha Empresa";
-$resp_assunto   = "Contato :: Alumi9 Comercial";
-$header2                = "
+/**
+ * Dados e-mail de resposta que vai para o cliente/visitante
+ */
+$resp_assunto = $assunto_resposta;
+$header2 = "
 Olá <b>$nome</b>,
 <br><br>
 Obrigado pelo seu contato.<br>
-Recebemos sua solicitação e brevemente entraremos em contato.
+Recebemos sua mensagem e brevemente entraremos em contato.
 <br><br><br>
+Atenciosamente,<br>
+$empresa<br>";
 
-==============================================<br>
-        Atenciosamente,<br>
-        Alumi9 Comercial<br>
-==============================================<br>
-";
-
-// Função HTML
-$headers2 .= "MIME-Version: 1.0\r\n";
-// $headers2 .= "Content-type: text/html; charset=iso-8859-1\r\n";
+$headers2 = "MIME-Version: 1.0\r\n";
 $headers2 .= "Content-type: text/html; charset=utf-8\r\n";
 $headers2 .= "From: Alumi9 Comercial <comercial@alumi9.com.br>\r\n";
-//$headers2 .= "From: Alumi9 Comercial <jose@agenciaart.com>\r\n";
+$headers2 .= "From: $empresa <$email>\r\n";
 
-// Envia para você
-mail($para, $assunto_contato, $header, $headers);
-// Envia para quem preencheu o form
-mail($email, $resp_assunto, $header2,$headers2);
+/**
+ * Dispara os e-mails
+ */
 
-// echo "<script>window.location='/form-revenda-web/'</script>";
 
-header("Location: /?success=1");
-exit;
-
-?>
+/**
+ * Caso $debug seja verdade, imprime todos os dados
+ * Caso falso, envia emails e
+ * redireciona para página de resposta com status do envio
+ */
+if ($debug) {
+  echo 'Nome: '.$nome.'<br>';
+  echo 'E-mail: '.$email.'<br>';
+  echo 'Telefone: '.$telefone.'<br>';
+  echo 'CPF: '.$cpf.'<br>';
+  echo 'RG: '.$rg.'<br>';
+  echo 'CEP: '.$cep.'<br>';
+  echo 'CNJP: '.$cnpj.'<br>';
+  echo 'Assunto: '.$assunto.'<br>';
+  echo 'Mensagem:<br>';
+  echo $mensagem.'<br><br>';
+  echo 'Nome do arquivo: '.$nome_arquivo.'<br>';
+  echo 'Tipo: '.$tipo_arquivo.'<br>';
+  echo 'Arquivo: '.$arquivo.'<br>';
+  echo 'Código de erro:'.$erro_arquivo.'<br>';
+  echo 'Tamanho: '.$tamanho_arquivo.' bytes<br><br>'; 
+  // echo ($tamanho_arquivo/1024).' kylobites<br>';
+  // echo (($tamanho_arquivo/1024)/1024).' megabites<br><br>';
+  echo 'Email para você<br>';
+  echo 'Para: '.$para.'<br>';
+  echo 'Assunto: '.$assunto_contato.'<br>';
+  echo 'Header: '.$header;
+  echo 'Headers: '.$headers;
+  echo '<br>';
+  echo 'Email para cliente<br>';
+  echo 'Para: '.$email.'<br>';
+  echo 'Assunto: '.$resp_assunto.'<br>';
+  echo 'Header2: '.$header2;
+  echo 'Headers2: '.$headers2;
+} else {
+  // email para você
+  mail($para, $assunto_contato, $header, $headers);
+  // email para quem preencheu o form
+  mail($email, $resp_assunto, $header2,$headers2);
+  // redireciona
+  header("Location: /?success=1");
+  exit;
+}

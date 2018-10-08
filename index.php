@@ -13,7 +13,7 @@
         echo '<h3>Mensagem enviada com sucesso</h3>';
     }
     ?>
-	<form action="src/send2.php" method="post" enctype="multipart/form-data">
+	<form action="src/send.php" method="post" enctype="multipart/form-data">
         <input type="hidden" name="formtype" value="contato/arquiteto">
         <input type="hidden" name="MAX_FILE_SIZE" value="300" />
 
