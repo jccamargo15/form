@@ -2,7 +2,7 @@
 /**
  * Valores para envio dos emails
  */
-$debug = true; //se verdade imprime os dados, se falso envia e redireciona
+$debug = false; //se verdade imprime os dados, se falso envia e redireciona
 $empresa = 'Nome da Empresa';
 $meu_email = 'jose@propulsao.digital';
 $tamanho_maximo_arquivo = '100000';
@@ -22,6 +22,11 @@ if (isset($_POST['email']) && !empty($_POST['email'])) {
   $email = $_POST['email'];
 } else {
   $email = '';
+}
+if (isset($_POST['celular']) && !empty($_POST['celular'])) {
+  $celular = $_POST['celular'];
+} else {
+  $celular = '';
 }
 if (isset($_POST['telefone']) && !empty($_POST['telefone'])) {
   $telefone = $_POST['telefone'];
@@ -62,6 +67,7 @@ if (isset($_POST['mensagem']) && !empty($_POST['mensagem'])) {
 /**
  * Campos do arquivo enviado
  */
+// $arquivo = (isset($_FILES['arquivo'])) ? $_FILES['arquivo'] : false;
 if (isset($_FILES['arquivo']['name']) && !empty($_FILES['arquivo']['name'])) {
   $nome_arquivo = $_FILES['arquivo']['name'];
 } else {
@@ -87,24 +93,75 @@ if (isset($_FILES['arquivo']['size']) && !empty($_FILES['arquivo']['size'])) {
 } else {
   $tamanho_arquivo = '';
 }
+if ($nome_arquivo!='' && $erro_arquivo=='') {
+  $tem_arquivo = true;
+} else {
+  $tem_arquivo = false;
+}
 
-/**
- * Dados e-mail que chega para você
- */
-$para = $meu_email;
-$assunto_contato = "Contato enviado pelo site: $assunto";
-$header = "
-<b>Nome:</b>    $nome ($empresa),<br>
-<b>Email:</b>   $email<br>
-<b>Assunto:</b> $assunto<br>
-<br><br>
-<b>Mensagem:</b><br>
-$mensagem
-<br><br>
-Data: $data";
-$headers = "MIME-Version: 1.0\r\n";
-$headers .= "Content-type: text/html;charset=utf-8\r\n";
-$headers .= "From: $nome <$email>\r\n";
+// if(file_exists($arquivo['tmp_name']) and !empty($arquivo)){ 
+if($tem_arquivo){ 
+  // $fp = fopen($_FILES['arquivo']['tmp_name'],"rb");
+  $fp = fopen($arquivo,"rb"); 
+  // $anexo = fread($fp,filesize($_FILES['arquivo']['tmp_name'])); 
+  $anexo = fread($fp,filesize($arquivo)); 
+  $anexo = base64_encode($anexo); 
+   
+  fclose($fp); 
+   
+  $anexo = chunk_split($anexo); 
+  
+  $boundary = "XYZ-" . date("dmYis") . "-ZYX"; 
+   
+  $mens = "--$boundary\r\n"; 
+  $mens .= "Content-Transfer-Encoding: 8bits\r\n"; 
+  $mens .= "Content-Type: text/html; charset=\"utf-8\"\r\n\r\n"; //plain 
+  $mens .= "$mensagem\r\n"; 
+  $mens .= "--$boundary\r\n"; 
+  // $mens .= "Content-Type: ".$arquivo['type']."\r\n"; 
+  $mens .= "Content-Type: ".$tipo_arquivo."\r\n"; 
+  // $mens .= "Content-Disposition: attachment; filename=\"".$arquivo['name']."\"\r\n"; 
+  $mens .= "Content-Disposition: attachment; filename=\"".$nome_arquivo."\"\r\n"; 
+  $mens .= "Content-Transfer-Encoding: base64\r\n"; 
+  $mens .= "$anexo\r\n"; 
+  $mens .= "--$boundary--\r\n"; 
+   
+  $headers = "MIME-Version: 1.0\r\n";
+  $headers .= "From: $email \r\n"; 
+  $headers .= "From: $nome <$email>\r\n";
+  $headers .= "Return-Path: $email \r\n"; 
+  $headers .= "Content-type: multipart/mixed; boundary=\"$boundary\"\r\n"; 
+  $headers .= "$boundary\r\n";
+
+  //envio o email com o anexo 
+  // mail($email,$assunto,$mens,$headers, "-r".$email_from); 
+  // echo "Email enviado com Sucesso!"; 
+   
+  //se nao tiver anexo 
+} else {  
+  /**
+   * Dados e-mail que chega para você
+   */
+  $para = $meu_email;
+  $assunto_contato = "Contato enviado pelo site: $assunto";
+  $header = "
+  <b>Nome:</b>    $nome ($empresa),<br>
+  <b>Email:</b>   $email<br>
+  <b>Assunto:</b> $assunto<br>
+  <br><br>
+  <b>Mensagem:</b><br>
+  $mensagem
+  <br><br>
+  Data: $data";
+  $headers = "MIME-Version: 1.0\r\n";
+  $headers .= "Content-type: text/html;charset=utf-8\r\n";
+  $headers .= "From: $nome <$email>\r\n";
+  
+  //envia o email para vc sem anexo 
+  // mail($email,$assunto,$mensagem, $headers, "-r".$email_from); 
+  // mail($para, $assunto_contato, $header, $headers);
+  // echo "Email enviado com Sucesso!"; 
+}
 
 /**
  * Dados e-mail de resposta que vai para o cliente/visitante
@@ -125,11 +182,6 @@ $headers2 .= "From: Alumi9 Comercial <comercial@alumi9.com.br>\r\n";
 $headers2 .= "From: $empresa <$email>\r\n";
 
 /**
- * Dispara os e-mails
- */
-
-
-/**
  * Caso $debug seja verdade, imprime todos os dados
  * Caso falso, envia emails e
  * redireciona para página de resposta com status do envio
@@ -137,6 +189,7 @@ $headers2 .= "From: $empresa <$email>\r\n";
 if ($debug) {
   echo 'Nome: '.$nome.'<br>';
   echo 'E-mail: '.$email.'<br>';
+  echo 'Celular: '.$celular.'<br>';
   echo 'Telefone: '.$telefone.'<br>';
   echo 'CPF: '.$cpf.'<br>';
   echo 'RG: '.$rg.'<br>';
@@ -145,6 +198,13 @@ if ($debug) {
   echo 'Assunto: '.$assunto.'<br>';
   echo 'Mensagem:<br>';
   echo $mensagem.'<br><br>';
+  if ($nome_arquivo!='' && $erro_arquivo=='') {
+    echo '<h4>Tem arquivo!</h4>';
+  }
+  else {
+    echo '<h4>Não tem arquivo!</h4>';
+  } 
+  echo '<br><br>';
   echo 'Nome do arquivo: '.$nome_arquivo.'<br>';
   echo 'Tipo: '.$tipo_arquivo.'<br>';
   echo 'Arquivo: '.$arquivo.'<br>';
@@ -164,11 +224,22 @@ if ($debug) {
   echo 'Header2: '.$header2;
   echo 'Headers2: '.$headers2;
 } else {
-  // email para você
-  mail($para, $assunto_contato, $header, $headers);
+  if($tem_arquivo){
+    //envio o email com o anexo 
+    mail($para, $assunto, $mens, $headers); 
+  } else {
+    // envia o email para vc sem anexo 
+    mail($para, $assunto_contato, $header, $headers);
+  }
   // email para quem preencheu o form
   mail($email, $resp_assunto, $header2,$headers2);
-  // redireciona
-  header("Location: /?success=1");
-  exit;
-}
+
+  // Verifica tamanho do arquivo e redireciona
+  if ($erro_arquivo==2 || $erro_arquivo==3){
+    header("Location: ../index.php?form_sent=2");
+    exit;
+  } else {
+    header("Location: ../index.php?form_sent=1");
+    exit;
+  }
+} 

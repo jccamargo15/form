@@ -8,14 +8,25 @@
 	<header>
 		<h1>Formulário Contato</h1>
 	</header>
-    <?php
-    if (isset($_GET['success']) && $_GET['success']) {
-        echo '<h3>Mensagem enviada com sucesso</h3>';
+	<?php
+	/**
+	 * Retorno de envio da mensagem
+	 */
+		if (isset($_GET['form_sent']) && !empty($_GET['form_sent'])) {
+			if ($_GET['form_sent']==0) {
+				echo '<h3 style="color: red;">Erro ao enviar mensagem. Tente novamente.</h3>';
+			}
+			if ($_GET['form_sent']==1) {
+				echo '<h3 style="color: red;">Mensagem enviada com sucesso</h3>';
+			}
+			if ($_GET['form_sent']==2) {
+				echo '<h3 style="color: red;">Arquivo anexo excede tamanho máximo.</h3>';
+			}
     }
     ?>
 	<form action="src/send.php" method="post" enctype="multipart/form-data">
         <input type="hidden" name="formtype" value="contato/arquiteto">
-        <input type="hidden" name="MAX_FILE_SIZE" value="300" />
+        <input type="hidden" name="MAX_FILE_SIZE" value="100000" />
 
 		<div>
 			<label>Nome</label>
@@ -24,12 +35,17 @@
 
 		<div class="email">
 	    	<label>Email</label>
-	    	<input name="Email"  type="email">
+	    	<input name="email"  type="email">
+	    </div>
+
+		<div class="celular">
+	    	<label>Celular</label>
+	    	<input name="celular"  type="text" maxlength="14" >
 	    </div>
 
 		<div class="telefone">
 	    	<label>Telefone</label>
-	    	<input name="tel"  type="text" maxlength="14" >
+	    	<input name="telefone"  type="text" maxlength="14" >
 	    </div>
 		
 		<div class="cpf">
@@ -55,6 +71,11 @@
 		<div>
 			<label>Mensagem</label>
 			<textarea name="mensagem" cols="30" rows="10"></textarea>
+		</div>
+
+		<div>
+			<label>Arquivo</label>
+			<input name="arquivo" type="file">
 		</div>
 
 		<div>
