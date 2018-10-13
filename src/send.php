@@ -5,10 +5,12 @@
 $debug = false; //se verdade imprime os dados, se falso envia e redireciona
 $empresa = 'Nome da Empresa';
 $meu_email = 'jose@propulsao.digital';
-$tamanho_maximo_arquivo = '100000';
+$tamanho_maximo_arquivo = '100000'; // em bytes
 $assunto_contato = 'Contato enviado pelo site';
 $assunto_resposta = 'Contato - ' . $empresa;
 $data = date("d/m/Y - H:i");
+$dominio = 'https://propulsao.digital/labs/form/attach/';
+$dir = '../attach/'; // diretório onde serão movidos os arquivos
 
 /**
  * Verifica os campos rebidos do formulário
@@ -95,50 +97,50 @@ if (isset($_FILES['arquivo']['size']) && !empty($_FILES['arquivo']['size'])) {
 }
 if ($nome_arquivo!='' && $erro_arquivo=='') {
   $tem_arquivo = true;
+  /**
+   * move e renomeia arquivo
+   */
+  $nome_novo_arquivo = date("YmdHis").'_'.$nome_arquivo;
+  move_uploaded_file($arquivo, $dir.$nomefoto);
+  $link_arquivo = $dominio.$nome_novo_arquivo;
 } else {
   $tem_arquivo = false;
+  $link_arquivo = '';
 }
 
-// if(file_exists($arquivo['tmp_name']) and !empty($arquivo)){ 
-if($tem_arquivo){ 
-  // $fp = fopen($_FILES['arquivo']['tmp_name'],"rb");
-  $fp = fopen($arquivo,"rb"); 
-  // $anexo = fread($fp,filesize($_FILES['arquivo']['tmp_name'])); 
-  $anexo = fread($fp,filesize($arquivo)); 
-  $anexo = base64_encode($anexo); 
-   
-  fclose($fp); 
-   
-  $anexo = chunk_split($anexo); 
-  
-  $boundary = "XYZ-" . date("dmYis") . "-ZYX"; 
-   
-  $mens = "--$boundary\r\n"; 
-  $mens .= "Content-Transfer-Encoding: 8bits\r\n"; 
-  $mens .= "Content-Type: text/html; charset=\"utf-8\"\r\n\r\n"; //plain 
-  $mens .= "$mensagem\r\n"; 
-  $mens .= "--$boundary\r\n"; 
-  // $mens .= "Content-Type: ".$arquivo['type']."\r\n"; 
-  $mens .= "Content-Type: ".$tipo_arquivo."\r\n"; 
-  // $mens .= "Content-Disposition: attachment; filename=\"".$arquivo['name']."\"\r\n"; 
-  $mens .= "Content-Disposition: attachment; filename=\"".$nome_arquivo."\"\r\n"; 
-  $mens .= "Content-Transfer-Encoding: base64\r\n"; 
-  $mens .= "$anexo\r\n"; 
-  $mens .= "--$boundary--\r\n"; 
-   
-  $headers = "MIME-Version: 1.0\r\n";
-  $headers .= "From: $email \r\n"; 
-  $headers .= "From: $nome <$email>\r\n";
-  $headers .= "Return-Path: $email \r\n"; 
-  $headers .= "Content-type: multipart/mixed; boundary=\"$boundary\"\r\n"; 
-  $headers .= "$boundary\r\n";
 
-  //envio o email com o anexo 
-  // mail($email,$assunto,$mens,$headers, "-r".$email_from); 
-  // echo "Email enviado com Sucesso!"; 
+// if($tem_arquivo){ 
+//   $fp = fopen($arquivo,"rb"); 
+//   $anexo = fread($fp,filesize($arquivo)); 
+//   $anexo = base64_encode($anexo); 
+//   fclose($fp); 
+//   $anexo = chunk_split($anexo); 
+//   $boundary = "XYZ-" . date("dmYis") . "-ZYX"; 
    
-  //se nao tiver anexo 
-} else {  
+//   $mens = "--$boundary\r\n"; 
+//   $mens .= "Content-Transfer-Encoding: 8bits\r\n"; 
+//   $mens .= "Content-Type: text/html; charset=\"utf-8\"\r\n\r\n"; //plain 
+//   $mens .= "$mensagem\r\n"; 
+//   $mens .= "--$boundary\r\n"; 
+//   $mens .= "Content-Type: ".$tipo_arquivo."\r\n"; 
+//   $mens .= "Content-Disposition: attachment; filename=\"".$nome_arquivo."\"\r\n"; 
+//   $mens .= "Content-Transfer-Encoding: base64\r\n"; 
+//   $mens .= "$anexo\r\n"; 
+//   $mens .= "--$boundary--\r\n"; 
+  
+//   $headers = "MIME-Version: 1.0\r\n";
+//   $headers .= "From: $email \r\n"; 
+//   $headers .= "From: $nome <$email>\r\n";
+//   $headers .= "Return-Path: $email \r\n"; 
+//   $headers .= "Content-type: multipart/mixed; boundary=\"$boundary\"\r\n"; 
+//   $headers .= "$boundary\r\n";
+
+//   //envio o email com o anexo 
+//   // mail($email,$assunto,$mens,$headers, "-r".$email_from); 
+//   // echo "Email enviado com Sucesso!"; 
+   
+//   //se nao tiver anexo 
+// } else {  
   /**
    * Dados e-mail que chega para você
    */
@@ -151,6 +153,8 @@ if($tem_arquivo){
   <br><br>
   <b>Mensagem:</b><br>
   $mensagem
+  <br>
+  <b>Link para download do anexo:</b> $link_arquivo<br>
   <br><br>
   Data: $data";
   $headers = "MIME-Version: 1.0\r\n";
@@ -161,7 +165,7 @@ if($tem_arquivo){
   // mail($email,$assunto,$mensagem, $headers, "-r".$email_from); 
   // mail($para, $assunto_contato, $header, $headers);
   // echo "Email enviado com Sucesso!"; 
-}
+// }
 
 /**
  * Dados e-mail de resposta que vai para o cliente/visitante
